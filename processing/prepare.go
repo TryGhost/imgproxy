@@ -206,8 +206,9 @@ func (pctx *pipelineContext) calcSizes(widthToScale, heightToScale int, po *opti
 
 func (pctx *pipelineContext) limitScale(widthToScale, heightToScale int, po *options.ProcessingOptions) {
 	maxresultDim := po.SecurityOptions.MaxResultDimension
+	maxresultWidth := po.SecurityOptions.MaxResultWidth
 
-	if maxresultDim <= 0 {
+	if maxresultDim <= 0 && maxresultWidth <= 0 {
 		return
 	}
 
@@ -227,25 +228,37 @@ func (pctx *pipelineContext) limitScale(widthToScale, heightToScale int, po *opt
 		outHeight += imath.ScaleToEven(po.Padding.Top, pctx.dprScale) + imath.ScaleToEven(po.Padding.Bottom, pctx.dprScale)
 	}
 
+	downScale := 1.0
+
 	if maxresultDim > 0 && (outWidth > maxresultDim || outHeight > maxresultDim) {
-		downScale := float64(maxresultDim) / float64(imath.Max(outWidth, outHeight))
-
-		pctx.wscale *= downScale
-		pctx.hscale *= downScale
-
-		// Prevent scaling below 1px
-		if minWScale := 1.0 / float64(widthToScale); pctx.wscale < minWScale {
-			pctx.wscale = minWScale
-		}
-		if minHScale := 1.0 / float64(heightToScale); pctx.hscale < minHScale {
-			pctx.hscale = minHScale
-		}
-
-		pctx.dprScale *= downScale
-
-		// Recalculate the sizes after changing the scales
-		pctx.calcSizes(widthToScale, heightToScale, po)
+		downScale = float64(maxresultDim) / float64(imath.Max(outWidth, outHeight))
 	}
+
+	if maxresultWidth > 0 && outWidth > maxresultWidth {
+		if widthScale := float64(maxresultWidth) / float64(outWidth); widthScale < downScale {
+			downScale = widthScale
+		}
+	}
+
+	if downScale >= 1.0 {
+		return
+	}
+
+	pctx.wscale *= downScale
+	pctx.hscale *= downScale
+
+	// Prevent scaling below 1px
+	if minWScale := 1.0 / float64(widthToScale); pctx.wscale < minWScale {
+		pctx.wscale = minWScale
+	}
+	if minHScale := 1.0 / float64(heightToScale); pctx.hscale < minHScale {
+		pctx.hscale = minHScale
+	}
+
+	pctx.dprScale *= downScale
+
+	// Recalculate the sizes after changing the scales
+	pctx.calcSizes(widthToScale, heightToScale, po)
 }
 
 func prepare(pctx *pipelineContext, img *vips.Image, po *options.ProcessingOptions, imgdata *imagedata.ImageData) error {

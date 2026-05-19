@@ -51,6 +51,7 @@ var (
 	PngUnlimited                bool
 	SvgUnlimited                bool
 	MaxResultDimension          int
+	MaxResultWidth              int
 	AllowedProcessiongOptions   []string
 	AllowSecurityOptions        bool
 
@@ -260,6 +261,7 @@ func Reset() {
 	PngUnlimited = false
 	SvgUnlimited = false
 	MaxResultDimension = 0
+	MaxResultWidth = 0
 	AllowedProcessiongOptions = make([]string, 0)
 	AllowSecurityOptions = false
 
@@ -500,6 +502,7 @@ func Configure() error {
 	configurators.Bool(&SvgUnlimited, "IMGPROXY_SVG_UNLIMITED")
 
 	configurators.Int(&MaxResultDimension, "IMGPROXY_MAX_RESULT_DIMENSION")
+	configurators.Int(&MaxResultWidth, "IMGPROXY_MAX_RESULT_WIDTH")
 	configurators.StringSlice(&AllowedProcessiongOptions, "IMGPROXY_ALLOWED_PROCESSING_OPTIONS")
 
 	configurators.Bool(&AllowSecurityOptions, "IMGPROXY_ALLOW_SECURITY_OPTIONS")

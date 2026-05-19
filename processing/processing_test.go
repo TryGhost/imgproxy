@@ -989,6 +989,90 @@ func (s *ProcessingTestSuite) TestResultSizeLimit() {
 	}
 }
 
+func (s *ProcessingTestSuite) TestResultWidthLimit() {
+	imgdata := s.openFile("test2.jpg")
+
+	po := options.NewProcessingOptions()
+
+	testCases := []struct {
+		dimLimit     int
+		widthLimit   int
+		width        int
+		height       int
+		resizingType options.ResizeType
+		rotate       int
+		outWidth     int
+		outHeight    int
+	}{
+		{
+			widthLimit:   300,
+			resizingType: options.ResizeFit,
+			outWidth:     200,
+			outHeight:    100,
+		},
+		{
+			widthLimit:   100,
+			resizingType: options.ResizeFit,
+			outWidth:     100,
+			outHeight:    50,
+		},
+		{
+			widthLimit:   50,
+			width:        100,
+			height:       100,
+			resizingType: options.ResizeFit,
+			outWidth:     50,
+			outHeight:    25,
+		},
+		{
+			widthLimit:   100,
+			resizingType: options.ResizeFit,
+			rotate:       90,
+			outWidth:     100,
+			outHeight:    200,
+		},
+		{
+			dimLimit:     150,
+			widthLimit:   50,
+			resizingType: options.ResizeFit,
+			outWidth:     50,
+			outHeight:    25,
+		},
+		{
+			dimLimit:     50,
+			widthLimit:   150,
+			resizingType: options.ResizeFit,
+			outWidth:     50,
+			outHeight:    25,
+		},
+	}
+
+	for _, tc := range testCases {
+		name := fmt.Sprintf("%s_%dx%d_wlimit_%d", tc.resizingType, tc.width, tc.height, tc.widthLimit)
+		if tc.dimLimit > 0 {
+			name += fmt.Sprintf("_dlimit_%d", tc.dimLimit)
+		}
+		if tc.rotate != 0 {
+			name += fmt.Sprintf("_rot_%d", tc.rotate)
+		}
+
+		s.Run(name, func() {
+			po.SecurityOptions.MaxResultDimension = tc.dimLimit
+			po.SecurityOptions.MaxResultWidth = tc.widthLimit
+			po.Width = tc.width
+			po.Height = tc.height
+			po.ResizingType = tc.resizingType
+			po.Rotate = tc.rotate
+
+			outImgdata, err := ProcessImage(context.Background(), imgdata, po)
+			s.Require().NoError(err)
+			s.Require().NotNil(outImgdata)
+
+			s.checkSize(outImgdata, tc.outWidth, tc.outHeight)
+		})
+	}
+}
+
 func TestProcessing(t *testing.T) {
 	suite.Run(t, new(ProcessingTestSuite))
 }

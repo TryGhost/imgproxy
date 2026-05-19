@@ -1006,6 +1006,24 @@ func applyMaxResultDimensionOption(po *ProcessingOptions, args []string) error {
 	return nil
 }
 
+func applyMaxResultWidthOption(po *ProcessingOptions, args []string) error {
+	if err := security.IsSecurityOptionsAllowed(); err != nil {
+		return err
+	}
+
+	if len(args) > 1 {
+		return newOptionArgumentError("Invalid max_result_width arguments: %v", args)
+	}
+
+	if x, err := strconv.Atoi(args[0]); err == nil {
+		po.SecurityOptions.MaxResultWidth = x
+	} else {
+		return newOptionArgumentError("Invalid max_result_width: %s", args[0])
+	}
+
+	return nil
+}
+
 func applyURLOption(po *ProcessingOptions, name string, args []string, usedPresets ...string) error {
 	switch name {
 	case "resize", "rs":
@@ -1100,6 +1118,8 @@ func applyURLOption(po *ProcessingOptions, name string, args []string, usedPrese
 		return applyMaxAnimationFrameResolutionOption(po, args)
 	case "max_result_dimension", "mrd":
 		return applyMaxResultDimensionOption(po, args)
+	case "max_result_width", "mrw":
+		return applyMaxResultWidthOption(po, args)
 	}
 
 	return newUnknownOptionError("processing", name)

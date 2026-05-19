@@ -10,6 +10,7 @@ type Options struct {
 	MaxAnimationFrames          int
 	MaxAnimationFrameResolution int
 	MaxResultDimension          int
+	MaxResultWidth              int
 }
 
 func DefaultOptions() Options {
@@ -19,6 +20,7 @@ func DefaultOptions() Options {
 		MaxAnimationFrames:          config.MaxAnimationFrames,
 		MaxAnimationFrameResolution: config.MaxAnimationFrameResolution,
 		MaxResultDimension:          config.MaxResultDimension,
+		MaxResultWidth:              config.MaxResultWidth,
 	}
 }
 
